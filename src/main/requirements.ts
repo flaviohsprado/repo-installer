@@ -17,7 +17,8 @@ export async function checkRequirements() {
     checkCommand('Git', 'git --version'),
     checkCommand('Java', 'java -version'),
     checkCommand('Docker', 'docker --version'),
-    checkCommand('Taskfile', 'task --version')
+    checkCommand('Taskfile', 'task --version'),
+    checkCommand('Azure CLI', 'az --version')
   ]
   return Promise.all(checks)
 }
