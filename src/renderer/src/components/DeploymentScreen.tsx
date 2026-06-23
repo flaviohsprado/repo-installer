@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 const STEPS = [
   { id: 'clone', name: 'Clonando Repositório', command: 'git', args: ['clone', 'https://telefonica-vivo-brasil@dev.azure.com/telefonica-vivo-brasil/ECMC%20-%20Ecomm%20Cloud%20B2C/_git/src-devops-darvin-hybris-67-dev', '.'] },
@@ -16,6 +16,11 @@ export function DeploymentScreen({ cwd }: Props) {
   const [logs, setLogs] = useState<string[]>([])
   const [status, setStatus] = useState<string>('idle')
   const [currentStepName, setCurrentStepName] = useState<string>('')
+  const bottomRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [logs])
 
   useEffect(() => {
     window.api.onLogReceived((newLog: string) => {
@@ -53,20 +58,28 @@ export function DeploymentScreen({ cwd }: Props) {
     setLogs((prev) => [...prev, '\n✅ Instalação concluída com sucesso!'])
   }
 
+  const copyLogs = () => {
+    navigator.clipboard.writeText(logs.join('\n'))
+  }
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', padding: '20px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', padding: '20px', height: '100vh', boxSizing: 'border-box' }}>
       <h2>Instalação do Hybris</h2>
-      <button onClick={startInstall} disabled={status === 'running'}>
-        {status === 'running' ? 'Instalando...' : 'Iniciar Instalação'}
-      </button>
+      <div style={{ display: 'flex', gap: '10px' }}>
+        <button onClick={startInstall} disabled={status === 'running'}>
+          {status === 'running' ? 'Instalando...' : 'Iniciar Instalação'}
+        </button>
+        <button onClick={copyLogs}>Copiar Logs</button>
+      </div>
       
       <p>
         Status geral: <strong>{status}</strong>
         {currentStepName && <span> | Etapa atual: <em>{currentStepName}</em></span>}
       </p>
 
-      <div style={{ backgroundColor: '#000', color: '#0f0', padding: '10px', marginTop: '10px', height: '300px', overflowY: 'auto', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+      <div style={{ backgroundColor: '#000', color: '#0f0', padding: '10px', marginTop: '10px', height: '60vh', flexGrow: 1, overflowY: 'auto', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
         {logs.map((l, i) => <div key={i}>{l}</div>)}
+        <div ref={bottomRef} />
       </div>
     </div>
   )
