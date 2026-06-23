@@ -1,4 +1,14 @@
+import { exec } from 'child_process'
+import { promisify } from 'util'
+
+const execAsync = promisify(exec)
+
 export async function loginAzure(): Promise<boolean> {
-  // Placeholder for real Azure Auth
-  return new Promise(resolve => setTimeout(() => resolve(true), 1000))
+  try {
+    await execAsync('az login')
+    return true
+  } catch (error) {
+    console.error('Azure login failed:', error)
+    return false
+  }
 }
