@@ -42,27 +42,31 @@ export function RequirementsScreen({ onNext }: Props) {
   const allMet = reqs.length > 0 && reqs.every(r => r.installed)
 
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Requisitos do Sistema</h2>
-      {loading ? <p>Verificando...</p> : (
-        <ul>
-          {reqs.map(r => (
-            <li key={r.name}>
-              {r.installed ? '✅' : '❌'} {r.name} {r.version ? `(${r.version})` : ''}
-            </li>
-          ))}
-        </ul>
-      )}
-      {!allMet && !loading && (
-        <div style={{ marginTop: '20px', marginBottom: '20px' }}>
-          <button onClick={handleInstallMissing} disabled={installing}>
-            {installing ? `Instalando ${installingName}...` : 'Instalar Pendências'}
-          </button>
-        </div>
-      )}
-      <button onClick={onNext} disabled={!allMet || loading || installing}>
-        Avançar
-      </button>
+    <div className="app-container">
+      <div className="card">
+        <h2 className="card-title">Requisitos do Sistema</h2>
+        <p className="card-subtitle">Verificando dependências necessárias</p>
+        {loading ? <p>Verificando...</p> : (
+          <ul style={{ listStyle: 'none', padding: 0, margin: '1rem 0' }}>
+            {reqs.map(r => (
+              <li key={r.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem', borderBottom: '1px solid var(--darvin-card-border)' }}>
+                <span>{r.name} {r.version ? `(${r.version})` : ''}</span>
+                <span>{r.installed ? '✅' : '❌'}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {!allMet && !loading && (
+          <div style={{ marginTop: '20px', marginBottom: '20px' }}>
+            <button className="btn-primary" onClick={handleInstallMissing} disabled={installing}>
+              {installing ? `Instalando ${installingName}...` : 'Instalar Pendências'}
+            </button>
+          </div>
+        )}
+        <button className="btn-primary" onClick={onNext} disabled={!allMet || loading || installing}>
+          Avançar
+        </button>
+      </div>
     </div>
   )
 }

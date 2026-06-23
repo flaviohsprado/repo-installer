@@ -63,23 +63,32 @@ export function DeploymentScreen({ cwd }: Props) {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', padding: '20px', height: '100vh', boxSizing: 'border-box' }}>
-      <h2>Instalação do Hybris</h2>
-      <div style={{ display: 'flex', gap: '10px' }}>
-        <button onClick={startInstall} disabled={status === 'running'}>
-          {status === 'running' ? 'Instalando...' : 'Iniciar Instalação'}
-        </button>
-        <button onClick={copyLogs}>Copiar Logs</button>
-      </div>
-      
-      <p>
-        Status geral: <strong>{status}</strong>
-        {currentStepName && <span> | Etapa atual: <em>{currentStepName}</em></span>}
-      </p>
+    <div className="app-container">
+      <div className="card" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column' }}>
+        <h2 className="card-title">Instalação do Hybris</h2>
+        <p className="card-subtitle">
+          Status geral: <strong>{status}</strong>
+          {currentStepName && <span> | Etapa atual: <em>{currentStepName}</em></span>}
+        </p>
 
-      <div style={{ backgroundColor: '#000', color: '#0f0', padding: '10px', marginTop: '10px', height: '60vh', flexGrow: 1, overflowY: 'auto', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-        {logs.map((l, i) => <div key={i}>{l}</div>)}
-        <div ref={bottomRef} />
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
+          <button className="btn-primary" style={{ marginTop: 0 }} onClick={startInstall} disabled={status === 'running'}>
+            {status === 'running' ? 'Instalando...' : 'Iniciar Instalação'}
+          </button>
+          <button className="btn-primary" style={{ marginTop: 0 }} onClick={copyLogs}>Copiar Logs</button>
+        </div>
+        
+        <div className="terminal-wrapper" style={{ flexGrow: 1 }}>
+          <div className="terminal-header">
+            <div className="terminal-dot dot-red"></div>
+            <div className="terminal-dot dot-yellow"></div>
+            <div className="terminal-dot dot-green"></div>
+          </div>
+          <div style={{ padding: '10px', height: '400px', overflowY: 'auto', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
+            {logs.map((l, i) => <div key={i}>{l}</div>)}
+            <div ref={bottomRef} />
+          </div>
+        </div>
       </div>
     </div>
   )
