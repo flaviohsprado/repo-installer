@@ -2,14 +2,20 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { DeploymentScreen } from './DeploymentScreen'
 
-// Mock the window.api
 window.api = {
   runInstallerStep: vi.fn().mockResolvedValue(0),
   onLogReceived: vi.fn(),
-  pathExists: vi.fn().mockResolvedValue(false)
-} as any
+  pathExists: vi.fn().mockResolvedValue(false),
+  checkRequirements: vi.fn(),
+  checkRequirement: vi.fn(),
+  installRequirement: vi.fn(),
+  onInstallLog: vi.fn(),
+  runRequirementAction: vi.fn(),
+  loginAzure: vi.fn(),
+  selectDirectory: vi.fn(),
+  platform: 'win32'
+} as unknown as Window['api']
 
-// Mock scrollIntoView
 window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
 describe('DeploymentScreen', () => {

@@ -1,36 +1,52 @@
 import { useState } from 'react'
+import { Folder } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card'
 
 interface Props {
-  onNext: (path: string) => void;
+  onNext: (path: string) => void
 }
 
 export function ConfigScreen({ onNext }: Props) {
   const [selectedPath, setSelectedPath] = useState<string>('')
 
-  const handleSelect = async () => {
+  const handleSelect = async (): Promise<void> => {
     const path = await window.api.selectDirectory()
     if (path) setSelectedPath(path)
   }
 
   return (
-    <div className="app-container">
-      <div className="card">
-        <h2 className="card-title">Diretório de Instalação</h2>
-        <p className="card-subtitle">Selecione uma pasta vazia onde o projeto será clonado.</p>
-        
-        <button className="btn-primary" onClick={handleSelect}>Escolher Pasta</button>
-        
+    <Card className="w-full max-w-2xl border-border bg-card/60 backdrop-blur-xl">
+      <CardHeader>
+        <CardTitle className="text-2xl">Diretório de Instalação</CardTitle>
+        <CardDescription>Selecione uma pasta vazia onde o projeto será clonado.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <Button variant="secondary" onClick={handleSelect}>
+          Escolher Pasta
+        </Button>
         {selectedPath && (
-          <div style={{ marginTop: '20px', padding: '15px', background: 'rgba(0,0,0,0.2)', borderRadius: '8px' }}>
-            <p style={{ margin: 0, marginBottom: '10px', fontSize: '0.9rem', color: 'var(--darvin-text-muted)' }}>Pasta selecionada:</p>
-            <div style={{ fontFamily: 'monospace', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '6px', marginBottom: '15px', wordBreak: 'break-all', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+          <div className="rounded-lg border border-border bg-muted/40 p-3">
+            <p className="mb-2 text-sm text-muted-foreground">Pasta selecionada:</p>
+            <div className="flex items-center gap-2 break-all rounded-md bg-background/60 p-3 font-mono text-sm">
+              <Folder className="h-4 w-4 shrink-0 text-primary" />
               {selectedPath}
             </div>
-            <button className="btn-primary" onClick={() => onNext(selectedPath)}>Avançar</button>
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+      <CardFooter>
+        <Button className="w-full" size="lg" disabled={!selectedPath} onClick={() => onNext(selectedPath)}>
+          Avançar
+        </Button>
+      </CardFooter>
+    </Card>
   )
 }

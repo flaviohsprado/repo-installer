@@ -1,57 +1,95 @@
-import * as cp from 'child_process'
+import { spawn, exec } from 'child_process'
 import { promisify } from 'util'
-
-const execAsync = promisify(cp.exec)
-
-const macCommands: Record<string, string> = {
-  'Git': 'brew install git',
-  'Java (1.8)': 'brew install --cask zulu@8',
-  'Docker': 'brew install --cask docker',
-  'Taskfile': 'brew install go-task/tap/go-task',
-  'Azure CLI': 'brew install azure-cli'
-}
-
-const winCommands: Record<string, string> = {
-  'Git': 'winget install --id Git.Git -e --accept-source-agreements',
-  'Java (1.8)': 'winget install ojdkbuild.openjdk.8 -e --accept-source-agreements',
-  'Docker': 'winget install Docker.DockerDesktop -e --accept-source-agreements',
-  'Taskfile': 'winget install --id GoTask.GoTask -e --accept-source-agreements',
-  'Azure CLI': 'winget install -e --id Microsoft.AzureCLI --accept-source-agreements'
-}
-
 import * as os from 'os'
 import * as path from 'path'
 import * as fs from 'fs'
 
-export async function installRequirement(name: string): Promise<boolean> {
-  const isMac = process.platform === 'darwin'
-  const commands = isMac ? macCommands : winCommands
-  const command = commands[name]
+const execAsync = promisify(exec)
 
-  if (!command) return false
+export interface InstallResult {
+  status: 'success' | 'error' | 'needs-action'
+  message?: string
+}
 
-  let askpassScriptPath: string | undefined
+const macCommands: Record<string, string> = {
+  Git: 'brew install git',
+  'Java (1.8)': 'brew install --cask zulu@8',
+  Docker: 'brew install --cask docker',
+  Taskfile: 'brew install go-task/tap/go-task',
+  'Azure CLI': 'brew install azure-cli'
+}
 
-  try {
-    const env = { ...process.env }
+const winCommands: Record<string, string> = {
+  Git: 'winget install --id Git.Git -e --accept-source-agreements --accept-package-agreements',
+  'Java (1.8)':
+    'winget install --id ojdkbuild.openjdk.8.jre -e --accept-source-agreements --accept-package-agreements',
+  Docker:
+    'winget install --id Docker.DockerDesktop -e --accept-source-agreements --accept-package-agreements',
+  Taskfile: 'winget install --id Task.Task -e --accept-source-agreements --accept-package-agreements',
+  'Azure CLI':
+    'winget install --id Microsoft.AzureCLI -e --accept-source-agreements --accept-package-agreements'
+}
 
-    if (isMac && command.includes('--cask')) {
-      const askpassScript = `#!/bin/sh
+function buildAskpassScript(name: string): string {
+  return `#!/bin/sh
 osascript -e 'Tell application (path to frontmost application as text) to display dialog "O Darvin Installer precisa de privilégios de Administrador para instalar o pacote: ${name}.\\n\\nPor favor, informe a senha do seu Mac:" default answer "" with hidden answer with title "Permissão Necessária"' -e 'text returned of result'
 `
-      askpassScriptPath = path.join(os.tmpdir(), `darvin-askpass-${Date.now()}.sh`)
-      fs.writeFileSync(askpassScriptPath, askpassScript)
-      fs.chmodSync(askpassScriptPath, 0o700)
-      env.SUDO_ASKPASS = askpassScriptPath
-    }
+}
 
-    await execAsync(command, { env })
-
-    if (askpassScriptPath) fs.unlinkSync(askpassScriptPath)
-    return true
-  } catch (error) {
-    if (askpassScriptPath && fs.existsSync(askpassScriptPath)) fs.unlinkSync(askpassScriptPath)
-    console.error(`Failed to install ${name}:`, error)
-    return false
+async function installElevatedWindows(
+  command: string,
+  onLog: (chunk: string) => void
+): Promise<InstallResult> {
+  onLog('\nSolicitando privilégios de administrador (UAC)...\n')
+  const psCommand = `Start-Process powershell -Verb RunAs -Wait -ArgumentList '-NoProfile','-Command','${command.replace(/'/g, "''")}'`
+  try {
+    await execAsync(`powershell -NoProfile -Command "${psCommand.replace(/"/g, '\\"')}"`)
+    onLog('Processo de instalação elevado finalizado.\n')
+    return { status: 'success' }
+  } catch {
+    return { status: 'error', message: 'Instalação como administrador falhou ou foi cancelada.' }
   }
+}
+
+export async function installRequirement(
+  name: string,
+  options: { elevated?: boolean } = {},
+  onLog: (chunk: string) => void = () => {}
+): Promise<InstallResult> {
+  const isMac = process.platform === 'darwin'
+  const command = (isMac ? macCommands : winCommands)[name]
+  if (!command) {
+    return { status: 'error', message: `Sem comando de instalação para "${name}".` }
+  }
+
+  if (!isMac && options.elevated) {
+    return installElevatedWindows(command, onLog)
+  }
+
+  let askpassScriptPath: string | undefined
+  const env = { ...process.env }
+  if (isMac && command.includes('--cask')) {
+    askpassScriptPath = path.join(os.tmpdir(), `darvin-askpass-${Date.now()}.sh`)
+    fs.writeFileSync(askpassScriptPath, buildAskpassScript(name))
+    fs.chmodSync(askpassScriptPath, 0o700)
+    env.SUDO_ASKPASS = askpassScriptPath
+  }
+
+  return new Promise<InstallResult>((resolve) => {
+    const child = spawn(command, { shell: true, env })
+    child.stdout?.on('data', (data) => onLog(data.toString()))
+    child.stderr?.on('data', (data) => onLog(data.toString()))
+    child.on('close', (code) => {
+      if (askpassScriptPath && fs.existsSync(askpassScriptPath)) fs.unlinkSync(askpassScriptPath)
+      if (code === 0) {
+        resolve({ status: 'success' })
+      } else {
+        resolve({ status: 'error', message: `Instalação falhou com código ${code}.` })
+      }
+    })
+    child.on('error', (err) => {
+      if (askpassScriptPath && fs.existsSync(askpassScriptPath)) fs.unlinkSync(askpassScriptPath)
+      resolve({ status: 'error', message: err.message })
+    })
+  })
 }

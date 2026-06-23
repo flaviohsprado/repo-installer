@@ -1,4 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const STEPS = [
   { id: 'clone', name: 'Clonando Repositório', command: 'git', args: ['clone', 'https://telefonica-vivo-brasil@dev.azure.com/telefonica-vivo-brasil/ECMC%20-%20Ecomm%20Cloud%20B2C/_git/src-devops-darvin-hybris-67-dev', '.'] },
@@ -9,7 +13,7 @@ const STEPS = [
 ]
 
 interface Props {
-  cwd: string;
+  cwd: string
 }
 
 export function DeploymentScreen({ cwd }: Props) {
@@ -31,20 +35,20 @@ export function DeploymentScreen({ cwd }: Props) {
   const startInstall = async () => {
     setStatus('running')
     setLogs(['--- Iniciando Deploy Automático ---'])
-    
+
     const hasTaskfile = await window.api.pathExists(cwd + '/Taskfile.yml')
-    
+
     for (const step of STEPS) {
       if (step.id === 'clone' && hasTaskfile) {
         setLogs((prev) => [...prev, '\n>>> Repositório já clonado (Taskfile.yml encontrado), pulando clone.'])
         continue
       }
-      
+
       setCurrentStepName(step.name)
       setLogs((prev) => [...prev, `\n>>> Executando: ${step.name} (${step.command} ${step.args.join(' ')})`])
-      
+
       const code = await window.api.runInstallerStep(step.command, step.args, cwd)
-      
+
       if (code !== 0) {
         setStatus('failed')
         setLogs((prev) => [...prev, `\n[ERRO] O passo "${step.name}" falhou com código ${code}. Instalação abortada.`])
@@ -52,7 +56,7 @@ export function DeploymentScreen({ cwd }: Props) {
         return
       }
     }
-    
+
     setStatus('success')
     setCurrentStepName('')
     setLogs((prev) => [...prev, '\n✅ Instalação concluída com sucesso!'])
@@ -63,33 +67,44 @@ export function DeploymentScreen({ cwd }: Props) {
   }
 
   return (
-    <div className="app-container">
-      <div className="card" style={{ maxWidth: '800px', display: 'flex', flexDirection: 'column' }}>
-        <h2 className="card-title">Instalação do Hybris</h2>
-        <p className="card-subtitle">
-          Status geral: <strong>{status}</strong>
-          {currentStepName && <span> | Etapa atual: <em>{currentStepName}</em></span>}
-        </p>
-
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '1rem' }}>
-          <button className="btn-primary" style={{ marginTop: 0 }} onClick={startInstall} disabled={status === 'running'}>
+    <Card className="flex w-full max-w-3xl flex-col border-border bg-card/60 backdrop-blur-xl">
+      <CardHeader>
+        <CardTitle className="text-2xl">Instalação do Hybris</CardTitle>
+        <CardDescription className="flex items-center gap-2">
+          Status geral: <Badge variant="secondary">{status}</Badge>
+          {currentStepName && (
+            <span className="text-muted-foreground">
+              Etapa atual: <em>{currentStepName}</em>
+            </span>
+          )}
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Button onClick={startInstall} disabled={status === 'running'}>
             {status === 'running' ? 'Instalando...' : 'Iniciar Instalação'}
-          </button>
-          <button className="btn-primary" style={{ marginTop: 0 }} onClick={copyLogs}>Copiar Logs</button>
+          </Button>
+          <Button variant="secondary" onClick={copyLogs}>
+            Copiar Logs
+          </Button>
         </div>
-        
-        <div className="terminal-wrapper" style={{ flexGrow: 1 }}>
-          <div className="terminal-header">
-            <div className="terminal-dot dot-red"></div>
-            <div className="terminal-dot dot-yellow"></div>
-            <div className="terminal-dot dot-green"></div>
+
+        <div className="overflow-hidden rounded-lg border border-border bg-black">
+          <div className="flex gap-1.5 border-b border-border bg-zinc-900 px-3 py-2">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f56]" />
+            <span className="h-3 w-3 rounded-full bg-[#ffbd2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#27c93f]" />
           </div>
-          <div style={{ padding: '10px', height: '400px', overflowY: 'auto', fontFamily: 'monospace', whiteSpace: 'pre-wrap' }}>
-            {logs.map((l, i) => <div key={i}>{l}</div>)}
-            <div ref={bottomRef} />
-          </div>
+          <ScrollArea className="h-96 p-3">
+            <div className="whitespace-pre-wrap font-mono text-xs text-zinc-300">
+              {logs.map((l, i) => (
+                <div key={i}>{l}</div>
+              ))}
+              <div ref={bottomRef} />
+            </div>
+          </ScrollArea>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   )
 }

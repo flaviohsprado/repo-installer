@@ -1,20 +1,25 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
 
-// Custom APIs for renderer
 const api = {
-  runInstallerStep: (command: string, args: string[], cwd?: string) => ipcRenderer.invoke('run-installer-step', command, args, cwd),
-  onLogReceived: (callback) => ipcRenderer.on('log-received', (_event, log) => callback(log)),
+  runInstallerStep: (command: string, args: string[], cwd?: string) =>
+    ipcRenderer.invoke('run-installer-step', command, args, cwd),
+  onLogReceived: (callback: (log: string) => void) =>
+    ipcRenderer.on('log-received', (_event, log) => callback(log)),
   loginAzure: () => ipcRenderer.invoke('login-azure'),
   checkRequirements: () => ipcRenderer.invoke('check-requirements'),
-  installRequirement: (name) => ipcRenderer.invoke('install-requirement', name),
+  checkRequirement: (name: string) => ipcRenderer.invoke('check-requirement', name),
+  installRequirement: (name: string, options?: { elevated?: boolean }) =>
+    ipcRenderer.invoke('install-requirement', name, options),
+  onInstallLog: (callback: (payload: { name: string; chunk: string }) => void) =>
+    ipcRenderer.on('install-log', (_event, payload) => callback(payload)),
+  runRequirementAction: (actionId: string) =>
+    ipcRenderer.invoke('run-requirement-action', actionId),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
-  pathExists: (path: string) => ipcRenderer.invoke('path-exists', path)
+  pathExists: (path: string) => ipcRenderer.invoke('path-exists', path),
+  platform: process.platform
 }
 
-// Use `contextBridge` APIs to expose Electron APIs to
-// renderer only if context isolation is enabled, otherwise
-// just add to the DOM global.
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)

@@ -3,17 +3,31 @@ import { LoginScreen } from './components/LoginScreen'
 import { RequirementsScreen } from './components/RequirementsScreen'
 import { ConfigScreen } from './components/ConfigScreen'
 import { DeploymentScreen } from './components/DeploymentScreen'
+import { WizardShell } from './components/WizardShell'
+
+type WizardStep = 'requirements' | 'config' | 'deploy'
 
 export default function App() {
-  const [step, setStep] = useState(1)
+  const [authenticated, setAuthenticated] = useState(false)
+  const [step, setStep] = useState<WizardStep>('requirements')
   const [installPath, setInstallPath] = useState('')
 
+  if (!authenticated) {
+    return <LoginScreen onLoginSuccess={() => setAuthenticated(true)} />
+  }
+
   return (
-    <div>
-      {step === 1 && <LoginScreen onLoginSuccess={() => setStep(2)} />}
-      {step === 2 && <RequirementsScreen onNext={() => setStep(3)} />}
-      {step === 3 && <ConfigScreen onNext={(path) => { setInstallPath(path); setStep(4); }} />}
-      {step === 4 && <DeploymentScreen cwd={installPath} />}
-    </div>
+    <WizardShell currentStep={step}>
+      {step === 'requirements' && <RequirementsScreen onNext={() => setStep('config')} />}
+      {step === 'config' && (
+        <ConfigScreen
+          onNext={(path) => {
+            setInstallPath(path)
+            setStep('deploy')
+          }}
+        />
+      )}
+      {step === 'deploy' && <DeploymentScreen cwd={installPath} />}
+    </WizardShell>
   )
 }

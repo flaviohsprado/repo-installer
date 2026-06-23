@@ -4,9 +4,10 @@ import * as fs from 'fs'
 import { executeCommand } from './executor'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { checkRequirements } from './requirements'
+import { checkRequirements, checkRequirement } from './requirements'
 import { loginAzure } from './auth'
 import { installRequirement } from './installer'
+import { openDockerDesktop } from './docker'
 
 function createWindow(): void {
   // Create the browser window.
@@ -76,7 +77,25 @@ app.whenReady().then(() => {
 
   ipcMain.handle('login-azure', () => loginAzure())
   ipcMain.handle('check-requirements', () => checkRequirements())
-  ipcMain.handle('install-requirement', (_, name) => installRequirement(name))
+  ipcMain.handle('check-requirement', (_, name: string) => checkRequirement(name))
+
+  ipcMain.handle(
+    'install-requirement',
+    async (event, name: string, options?: { elevated?: boolean }) => {
+      const webContents = event.sender
+      const onLog = (chunk: string) => webContents.send('install-log', { name, chunk })
+      return installRequirement(name, options ?? {}, onLog)
+    }
+  )
+
+  ipcMain.handle('run-requirement-action', async (_, actionId: string) => {
+    if (actionId === 'open-docker') {
+      await openDockerDesktop()
+      return true
+    }
+    return false
+  })
+
   ipcMain.handle('path-exists', (_, pathStr) => fs.existsSync(pathStr))
 
   createWindow()

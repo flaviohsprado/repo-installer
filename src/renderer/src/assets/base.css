@@ -23,24 +23,6 @@
   --ev-button-alt-hover-bg: var(--ev-c-gray-2);
 }
 
-:root {
-  --color-background: var(--ev-c-black);
-  --color-background-soft: var(--ev-c-black-soft);
-  --color-background-mute: var(--ev-c-black-mute);
-
-  --color-text: var(--ev-c-text-1);
-
-  --darvin-bg: #0f172a;
-  --darvin-card-bg: rgba(30, 41, 59, 0.7);
-  --darvin-card-border: rgba(255, 255, 255, 0.1);
-  --darvin-gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
-  --darvin-gradient-hover: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-  --darvin-text-main: #f8fafc;
-  --darvin-text-muted: #94a3b8;
-  --darvin-success: #10b981;
-  --darvin-error: #ef4444;
-}
-
 *,
 *::before,
 *::after {
@@ -55,8 +37,6 @@ ul {
 
 body {
   min-height: 100vh;
-  color: var(--darvin-text-main);
-  background: var(--darvin-bg);
   line-height: 1.6;
   font-family:
     Inter,
