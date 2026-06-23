@@ -24,6 +24,8 @@ export function RequirementsScreen({ onNext }: Props) {
       await window.api.installRequirement(req.name)
     }
     setInstallingName('')
+    // Delay for macOS cache
+    await new Promise(r => setTimeout(r, 2000))
     // Re-check
     setLoading(true)
     const results = await window.api.checkRequirements()
