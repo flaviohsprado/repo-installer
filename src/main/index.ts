@@ -3,6 +3,8 @@ import { join } from 'path'
 import { executeCommand } from './executor'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { checkRequirements } from './requirements'
+import { loginAzure } from './auth'
 
 function createWindow(): void {
   // Create the browser window.
@@ -65,6 +67,9 @@ app.whenReady().then(() => {
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
+
+  ipcMain.handle('login-azure', () => loginAzure())
+  ipcMain.handle('check-requirements', () => checkRequirements())
 
   createWindow()
 

@@ -6,6 +6,8 @@ declare global {
     api: {
       runInstallerStep: (stepName: string) => Promise<number>
       onLogReceived: (callback: (log: string) => void) => void
+      loginAzure: () => Promise<boolean>
+      checkRequirements: () => Promise<{ name: string; installed: boolean; version?: string }[]>
     }
   }
 }

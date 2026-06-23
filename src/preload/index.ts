@@ -4,7 +4,9 @@ import { electronAPI } from '@electron-toolkit/preload'
 // Custom APIs for renderer
 const api = {
   runInstallerStep: (stepName: string) => ipcRenderer.invoke('run-installer-step', stepName),
-  onLogReceived: (callback) => ipcRenderer.on('log-received', (_event, log) => callback(log))
+  onLogReceived: (callback) => ipcRenderer.on('log-received', (_event, log) => callback(log)),
+  loginAzure: () => ipcRenderer.invoke('login-azure'),
+  checkRequirements: () => ipcRenderer.invoke('check-requirements')
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
