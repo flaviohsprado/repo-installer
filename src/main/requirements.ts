@@ -3,10 +3,16 @@ import { promisify } from 'util'
 
 const execAsync = promisify(exec)
 
-async function checkCommand(name: string, command: string): Promise<{ name: string; installed: boolean; version?: string }> {
+async function checkCommand(name: string, command: string, versionCheck?: (output: string) => boolean): Promise<{ name: string; installed: boolean; version?: string }> {
   try {
-    const { stdout } = await execAsync(command)
-    return { name, installed: true, version: stdout.trim().split('\n')[0] }
+    const { stdout, stderr } = await execAsync(command)
+    const output = stdout.trim() || stderr.trim()
+    
+    if (versionCheck && !versionCheck(output)) {
+      return { name, installed: false }
+    }
+
+    return { name, installed: true, version: output.split('\n')[0] }
   } catch (error) {
     return { name, installed: false }
   }
@@ -15,7 +21,7 @@ async function checkCommand(name: string, command: string): Promise<{ name: stri
 export async function checkRequirements() {
   const checks = [
     checkCommand('Git', 'git --version'),
-    checkCommand('Java', 'java -version'),
+    checkCommand('Java (1.8)', 'java -version', (out) => out.includes('1.8.') || out.includes('1.8.0')),
     checkCommand('Docker', 'docker --version'),
     checkCommand('Taskfile', 'task --version'),
     checkCommand('Azure CLI', 'az --version')
