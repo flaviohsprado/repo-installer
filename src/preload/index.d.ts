@@ -8,6 +8,7 @@ declare global {
       onLogReceived: (callback: (log: string) => void) => void
       loginAzure: () => Promise<boolean>
       checkRequirements: () => Promise<{ name: string; installed: boolean; version?: string }[]>
+      installRequirement: (name: string) => Promise<boolean>
     }
   }
 }

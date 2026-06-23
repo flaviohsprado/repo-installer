@@ -6,7 +6,8 @@ const api = {
   runInstallerStep: (stepName: string) => ipcRenderer.invoke('run-installer-step', stepName),
   onLogReceived: (callback) => ipcRenderer.on('log-received', (_event, log) => callback(log)),
   loginAzure: () => ipcRenderer.invoke('login-azure'),
-  checkRequirements: () => ipcRenderer.invoke('check-requirements')
+  checkRequirements: () => ipcRenderer.invoke('check-requirements'),
+  installRequirement: (name) => ipcRenderer.invoke('install-requirement', name)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

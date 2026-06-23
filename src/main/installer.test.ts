@@ -1,9 +1,8 @@
 import { expect, test, vi, describe } from 'vitest'
 import { installRequirement } from './installer'
-import * as cp from 'child_process'
 
 vi.mock('child_process', () => ({
-  exec: vi.fn((cmd, options, callback) => {
+  exec: vi.fn((_cmd, options, callback) => {
     const cb = typeof options === 'function' ? options : callback
     if (typeof cb === 'function') {
       cb(null, { stdout: '', stderr: '' })

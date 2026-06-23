@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { checkRequirements } from './requirements'
 import { loginAzure } from './auth'
+import { installRequirement } from './installer'
 
 function createWindow(): void {
   // Create the browser window.
@@ -70,6 +71,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('login-azure', () => loginAzure())
   ipcMain.handle('check-requirements', () => checkRequirements())
+  ipcMain.handle('install-requirement', (_, name) => installRequirement(name))
 
   createWindow()
 
