@@ -27,6 +27,28 @@ export async function installRequirement(name: string): Promise<boolean> {
   if (!command) return false
 
   try {
+    if (isMac && command.includes('--cask')) {
+      const script = `osascript -e 'Tell application (path to frontmost application as text) to display dialog "O Darvin Installer precisa de privilégios de Administrador para instalar pacotes de sistema (${name}).\n\nPor favor, informe a senha do seu Mac:" default answer "" with hidden answer with title "Permissão Necessária"' -e 'text returned of result'`
+      try {
+        const { stdout: pass } = await execAsync(script)
+        const password = pass.trim()
+        if (password) {
+          await new Promise<void>((resolve, reject) => {
+            const child = cp.spawn('sudo', ['-S', '-v'])
+            child.stdin.write(password + '\n')
+            child.stdin.end()
+            child.on('close', (code) => {
+              if (code === 0) resolve()
+              else reject(new Error('Senha incorreta'))
+            })
+          })
+        }
+      } catch (e) {
+        console.warn('Usuário cancelou ou senha incorreta', e)
+        return false
+      }
+    }
+
     await execAsync(command)
     return true
   } catch (error) {
