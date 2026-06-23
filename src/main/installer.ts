@@ -5,7 +5,7 @@ const execAsync = promisify(cp.exec)
 
 const macCommands: Record<string, string> = {
   'Git': 'brew install git',
-  'Java (1.8)': 'brew install openjdk@8',
+  'Java (1.8)': 'brew install --cask zulu@8',
   'Docker': 'brew install --cask docker',
   'Taskfile': 'brew install go-task/tap/go-task',
   'Azure CLI': 'brew install azure-cli'
