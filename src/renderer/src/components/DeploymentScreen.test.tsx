@@ -10,13 +10,17 @@ window.api = {
 
 describe('DeploymentScreen', () => {
   it('renders a start button and a terminal area', () => {
-    render(<DeploymentScreen />)
+    render(<DeploymentScreen cwd="/fake/path" />)
     expect(screen.getByText('Iniciar Instalação')).toBeDefined()
   })
 
   it('calls runInstallerStep when button is clicked', () => {
-    render(<DeploymentScreen />)
+    render(<DeploymentScreen cwd="/fake/path" />)
     fireEvent.click(screen.getByText('Iniciar Instalação'))
-    expect(window.api.runInstallerStep).toHaveBeenCalledWith('git-clone')
+    expect(window.api.runInstallerStep).toHaveBeenCalledWith(
+      'git',
+      ['clone', 'https://telefonica-vivo-brasil@dev.azure.com/telefonica-vivo-brasil/ECMC%20-%20Ecomm%20Cloud%20B2C/_git/src-devops-darvin-hybris-67-dev', '.'],
+      '/fake/path'
+    )
   })
 })
