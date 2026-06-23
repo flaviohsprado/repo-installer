@@ -1,12 +1,16 @@
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import { DeploymentScreen } from './DeploymentScreen'
 
 // Mock the window.api
 window.api = {
   runInstallerStep: vi.fn().mockResolvedValue(0),
-  onLogReceived: vi.fn()
+  onLogReceived: vi.fn(),
+  pathExists: vi.fn().mockResolvedValue(false)
 } as any
+
+// Mock scrollIntoView
+window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
 describe('DeploymentScreen', () => {
   it('renders a start button and a terminal area', () => {
@@ -14,13 +18,15 @@ describe('DeploymentScreen', () => {
     expect(screen.getByText('Iniciar Instalação')).toBeDefined()
   })
 
-  it('calls runInstallerStep when button is clicked', () => {
+  it('calls runInstallerStep when button is clicked', async () => {
     render(<DeploymentScreen cwd="/fake/path" />)
     fireEvent.click(screen.getByText('Iniciar Instalação'))
-    expect(window.api.runInstallerStep).toHaveBeenCalledWith(
-      'git',
-      ['clone', 'https://telefonica-vivo-brasil@dev.azure.com/telefonica-vivo-brasil/ECMC%20-%20Ecomm%20Cloud%20B2C/_git/src-devops-darvin-hybris-67-dev', '.'],
-      '/fake/path'
-    )
+    await waitFor(() => {
+      expect(window.api.runInstallerStep).toHaveBeenCalledWith(
+        'git',
+        ['clone', 'https://telefonica-vivo-brasil@dev.azure.com/telefonica-vivo-brasil/ECMC%20-%20Ecomm%20Cloud%20B2C/_git/src-devops-darvin-hybris-67-dev', '.'],
+        '/fake/path'
+      )
+    })
   })
 })
