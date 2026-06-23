@@ -10,6 +10,7 @@ declare global {
       checkRequirements: () => Promise<{ name: string; installed: boolean; version?: string }[]>
       installRequirement: (name: string) => Promise<boolean>
       selectDirectory: () => Promise<string | null>
+      pathExists: (path: string) => Promise<boolean>
     }
   }
 }

@@ -8,7 +8,8 @@ const api = {
   loginAzure: () => ipcRenderer.invoke('login-azure'),
   checkRequirements: () => ipcRenderer.invoke('check-requirements'),
   installRequirement: (name) => ipcRenderer.invoke('install-requirement', name),
-  selectDirectory: () => ipcRenderer.invoke('select-directory')
+  selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  pathExists: (path: string) => ipcRenderer.invoke('path-exists', path)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

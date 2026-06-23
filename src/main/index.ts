@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import * as fs from 'fs'
 import { executeCommand } from './executor'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -76,6 +77,7 @@ app.whenReady().then(() => {
   ipcMain.handle('login-azure', () => loginAzure())
   ipcMain.handle('check-requirements', () => checkRequirements())
   ipcMain.handle('install-requirement', (_, name) => installRequirement(name))
+  ipcMain.handle('path-exists', (_, pathStr) => fs.existsSync(pathStr))
 
   createWindow()
 
