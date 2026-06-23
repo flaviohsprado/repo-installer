@@ -1,5 +1,6 @@
 import Versions from './components/Versions'
 import electronLogo from './assets/electron.svg'
+import { DeploymentScreen } from './components/DeploymentScreen'
 
 function App(): React.JSX.Element {
   const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
@@ -28,6 +29,7 @@ function App(): React.JSX.Element {
         </div>
       </div>
       <Versions></Versions>
+      <DeploymentScreen />
     </>
   )
 }
