@@ -19,9 +19,13 @@ async function checkCommand(name: string, command: string, versionCheck?: (outpu
 }
 
 export async function checkRequirements() {
+  const javaCommand = process.platform === 'darwin' 
+    ? '"$(/usr/libexec/java_home -v 1.8)/bin/java" -version'
+    : 'java -version'
+
   const checks = [
     checkCommand('Git', 'git --version'),
-    checkCommand('Java (1.8)', 'java -version', (out) => out.includes('1.8.') || out.includes('1.8.0')),
+    checkCommand('Java (1.8)', javaCommand, (out) => out.includes('1.8.') || out.includes('1.8.0')),
     checkCommand('Docker', 'docker --version'),
     checkCommand('Taskfile', 'task --version'),
     checkCommand('Azure CLI', 'az --version')
