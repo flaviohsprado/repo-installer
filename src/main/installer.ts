@@ -5,7 +5,7 @@ const execAsync = promisify(cp.exec)
 
 const macCommands: Record<string, string> = {
   'Git': 'brew install git',
-  'Java': 'brew install openjdk@8',
+  'Java (1.8)': 'brew install openjdk@8',
   'Docker': 'brew install --cask docker',
   'Taskfile': 'brew install go-task/tap/go-task',
   'Azure CLI': 'brew install azure-cli'
@@ -13,7 +13,7 @@ const macCommands: Record<string, string> = {
 
 const winCommands: Record<string, string> = {
   'Git': 'winget install --id Git.Git -e --accept-source-agreements',
-  'Java': 'winget install ojdkbuild.openjdk.8 -e --accept-source-agreements',
+  'Java (1.8)': 'winget install ojdkbuild.openjdk.8 -e --accept-source-agreements',
   'Docker': 'winget install Docker.DockerDesktop -e --accept-source-agreements',
   'Taskfile': 'winget install --id GoTask.GoTask -e --accept-source-agreements',
   'Azure CLI': 'winget install -e --id Microsoft.AzureCLI --accept-source-agreements'
