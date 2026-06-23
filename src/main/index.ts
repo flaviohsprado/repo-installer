@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { executeCommand } from './executor'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
@@ -43,13 +43,21 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  ipcMain.handle('run-installer-step', async (event, command, args) => {
+  ipcMain.handle('select-directory', async () => {
+    const result = await dialog.showOpenDialog({
+      properties: ['openDirectory']
+    })
+    if (result.canceled) return null
+    return result.filePaths[0]
+  })
+
+  ipcMain.handle('run-installer-step', async (event, command: string, args: string[], cwd?: string) => {
     const webContents = event.sender
     const onLog = (log: string) => {
       webContents.send('log-received', log)
     }
     
-    return await executeCommand(command, args, onLog)
+    return await executeCommand(command, args, cwd, onLog)
   })
 
   // Set app user model id for windows

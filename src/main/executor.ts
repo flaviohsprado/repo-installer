@@ -1,8 +1,8 @@
 import { spawn } from 'child_process'
 
-export function executeCommand(command: string, args: string[], onLog: (data: string) => void): Promise<number> {
+export function executeCommand(command: string, args: string[], cwd: string | undefined, onLog: (data: string) => void): Promise<number> {
   return new Promise((resolve) => {
-    const child = spawn(command, args, { shell: true })
+    const child = spawn(command, args, { shell: true, cwd })
     
     child.stdout.on('data', (data) => {
       onLog(data.toString())

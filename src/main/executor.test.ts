@@ -4,7 +4,7 @@ import { executeCommand } from './executor'
 describe('executor', () => {
   it('executes a command and returns exit code 0', async () => {
     const onLog = vi.fn()
-    const code = await executeCommand('echo', ['hello'], onLog)
+    const code = await executeCommand('echo', ['hello'], process.cwd(), onLog)
     expect(code).toBe(0)
     expect(onLog).toHaveBeenCalledWith(expect.stringContaining('hello'))
   })
