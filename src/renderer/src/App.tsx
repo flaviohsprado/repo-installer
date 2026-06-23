@@ -1,37 +1,16 @@
-import Versions from './components/Versions'
-import electronLogo from './assets/electron.svg'
+import { useState } from 'react'
+import { LoginScreen } from './components/LoginScreen'
+import { RequirementsScreen } from './components/RequirementsScreen'
 import { DeploymentScreen } from './components/DeploymentScreen'
 
-function App(): React.JSX.Element {
-  const ipcHandle = (): void => window.electron.ipcRenderer.send('ping')
+export default function App() {
+  const [step, setStep] = useState(1)
 
   return (
-    <>
-      <img alt="logo" className="logo" src={electronLogo} />
-      <div className="creator">Powered by electron-vite</div>
-      <div className="text">
-        Build an Electron app with <span className="react">React</span>
-        &nbsp;and <span className="ts">TypeScript</span>
-      </div>
-      <p className="tip">
-        Please try pressing <code>F12</code> to open the devTool
-      </p>
-      <div className="actions">
-        <div className="action">
-          <a href="https://electron-vite.org/" target="_blank" rel="noreferrer">
-            Documentation
-          </a>
-        </div>
-        <div className="action">
-          <a target="_blank" rel="noreferrer" onClick={ipcHandle}>
-            Send IPC
-          </a>
-        </div>
-      </div>
-      <Versions></Versions>
-      <DeploymentScreen />
-    </>
+    <div>
+      {step === 1 && <LoginScreen onLoginSuccess={() => setStep(2)} />}
+      {step === 2 && <RequirementsScreen onNext={() => setStep(3)} />}
+      {step === 3 && <DeploymentScreen />}
+    </div>
   )
 }
-
-export default App
