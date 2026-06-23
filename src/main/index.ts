@@ -43,17 +43,13 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
-  ipcMain.handle('run-installer-step', async (event, stepName) => {
+  ipcMain.handle('run-installer-step', async (event, command, args) => {
     const webContents = event.sender
     const onLog = (log: string) => {
       webContents.send('log-received', log)
     }
     
-    // Simple mapping for now
-    if (stepName === 'git-clone') {
-      return await executeCommand('git', ['clone', '--help'], onLog) // Mock for now
-    }
-    return 0
+    return await executeCommand(command, args, onLog)
   })
 
   // Set app user model id for windows

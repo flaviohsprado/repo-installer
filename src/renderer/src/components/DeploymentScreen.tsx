@@ -13,7 +13,7 @@ export function DeploymentScreen() {
   const startInstall = async () => {
     setStatus('running')
     setLogs(['Starting deployment...'])
-    const code = await window.api.runInstallerStep('git-clone')
+    const code = await window.api.runInstallerStep('git', ['clone', '--help'])
     setStatus(code === 0 ? 'success' : 'failed')
   }
 

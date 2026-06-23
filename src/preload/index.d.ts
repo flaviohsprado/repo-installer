@@ -4,7 +4,7 @@ declare global {
   interface Window {
     electron: ElectronAPI
     api: {
-      runInstallerStep: (stepName: string) => Promise<number>
+      runInstallerStep: (command: string, args: string[]) => Promise<number>
       onLogReceived: (callback: (log: string) => void) => void
       loginAzure: () => Promise<boolean>
       checkRequirements: () => Promise<{ name: string; installed: boolean; version?: string }[]>
