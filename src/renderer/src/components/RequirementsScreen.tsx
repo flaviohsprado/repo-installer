@@ -61,6 +61,11 @@ export function RequirementsScreen({ onNext }: Props) {
             <button className="btn-primary" onClick={handleInstallMissing} disabled={installing}>
               {installing ? `Instalando ${installingName}...` : 'Instalar Pendências'}
             </button>
+            {installing && (
+              <p style={{ marginTop: '10px', fontSize: '13px', color: 'var(--darvin-text-muted)', textAlign: 'center' }}>
+                Atenção: Verifique o terminal, o sistema pode pedir sua senha.
+              </p>
+            )}
           </div>
         )}
         <button className="btn-primary" onClick={onNext} disabled={!allMet || loading || installing}>
