@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import { executeCommand } from './executor'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -39,6 +40,19 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  ipcMain.handle('run-installer-step', async (event, stepName) => {
+    const webContents = event.sender
+    const onLog = (log: string) => {
+      webContents.send('log-received', log)
+    }
+    
+    // Simple mapping for now
+    if (stepName === 'git-clone') {
+      return await executeCommand('git', ['clone', '--help'], onLog) // Mock for now
+    }
+    return 0
+  })
+
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
 
