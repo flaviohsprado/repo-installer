@@ -6,8 +6,13 @@ import icon from '../../resources/icon.png?asset'
 import { loginAzure } from './auth'
 import { openDockerDesktop } from './docker'
 import { executeCommand } from './executor'
+import { fixPath } from './fix-path'
 import { installRequirement } from './installer'
 import { checkRequirement, checkRequirements } from './requirements'
+
+// Garante que comandos de shell (brew, task, az, docker) sejam encontrados
+// quando o app é aberto pelo Finder/Dock no macOS/Linux. No-op no Windows.
+fixPath()
 
 function createWindow(): void {
    // Create the browser window.

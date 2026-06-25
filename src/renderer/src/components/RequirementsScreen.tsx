@@ -2,7 +2,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { AlertTriangle, CheckCircle2, ChevronDown, Loader2, XCircle } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, ChevronDown, Loader2, RefreshCw, XCircle } from 'lucide-react'
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 
 interface RequirementResult {
@@ -27,6 +27,7 @@ interface Props {
 export function RequirementsScreen({ onNext }: Props) {
    const [reqs, setReqs] = useState<RequirementResult[]>([])
    const [loading, setLoading] = useState(true)
+   const [refreshing, setRefreshing] = useState(false)
    const [installing, setInstalling] = useState<Record<string, boolean>>({})
    const [logs, setLogs] = useState<Record<string, string>>({})
    const [expanded, setExpanded] = useState<Record<string, boolean>>({})
@@ -51,6 +52,17 @@ export function RequirementsScreen({ onNext }: Props) {
       setReqs((prev) => prev.map((r) => (r.name === next.name ? next : r)))
    }
 
+   // No macOS, logo após instalar, o binário pode demorar a aparecer (PATH/cache,
+   // app ainda sendo copiado). Re-checa algumas vezes antes de desistir.
+   const recheckWithRetry = async (name: string): Promise<RequirementResult> => {
+      let result = await window.api.checkRequirement(name)
+      for (let attempt = 0; attempt < 3 && result.status !== 'ok'; attempt++) {
+         await new Promise((r) => setTimeout(r, 1500))
+         result = await window.api.checkRequirement(name)
+      }
+      return result
+   }
+
    const handleInstall = async (name: string, elevated = false): Promise<void> => {
       setErrors((prev) => ({ ...prev, [name]: '' }))
       logsRef.current[name] = ''
@@ -62,7 +74,7 @@ export function RequirementsScreen({ onNext }: Props) {
       if (result.status === 'error' && result.message) {
          setErrors((prev) => ({ ...prev, [name]: result.message as string }))
       }
-      const rechecked = await window.api.checkRequirement(name)
+      const rechecked = await recheckWithRetry(name)
       updateReq(rechecked)
       setInstalling((prev) => ({ ...prev, [name]: false }))
    }
@@ -71,10 +83,18 @@ export function RequirementsScreen({ onNext }: Props) {
       if (!req.actionId) return
       setInstalling((prev) => ({ ...prev, [req.name]: true }))
       await window.api.runRequirementAction(req.actionId)
-      await new Promise((r) => setTimeout(r, 1500))
-      const rechecked = await window.api.checkRequirement(req.name)
+      const rechecked = await recheckWithRetry(req.name)
       updateReq(rechecked)
       setInstalling((prev) => ({ ...prev, [req.name]: false }))
+   }
+
+   // Re-verifica todas as dependências do zero. Saída de emergência caso algum
+   // refetch por item não tenha detectado o estado real.
+   const handleRefresh = async (): Promise<void> => {
+      setRefreshing(true)
+      const results = await window.api.checkRequirements()
+      setReqs(results)
+      setRefreshing(false)
    }
 
    const allMet = reqs.length > 0 && reqs.every((r) => r.status === 'ok')
@@ -111,11 +131,23 @@ export function RequirementsScreen({ onNext }: Props) {
 
    return (
       <div className="flex w-full max-w-2xl flex-col gap-4">
-         <div className="flex flex-col gap-2">
-            <span className="text-2xl font-bold">Requisitos do Sistema</span>
-            <span className="text-sm text-muted-foreground">
-               Verificando as dependências necessárias para o ambiente.
-            </span>
+         <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-2">
+               <span className="text-2xl font-bold">Requisitos do Sistema</span>
+               <span className="text-sm text-muted-foreground">
+                  Verificando as dependências necessárias para o ambiente.
+               </span>
+            </div>
+            <Button
+               size="sm"
+               variant="outline"
+               className="gap-2"
+               onClick={handleRefresh}
+               disabled={loading || refreshing}
+            >
+               <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+               Atualizar
+            </Button>
          </div>
 
          <div>
