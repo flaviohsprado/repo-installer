@@ -38,5 +38,3 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-electronDownload:
-  mirror: https://npmmirror.com/mirrors/electron/
